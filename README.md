@@ -4,7 +4,7 @@ Analysis Research (BAR) 2019.
 
 ## Tasks
 
-You can use the code two solve two different task:
+You can use the code to solve two different tasks:
 
 - Binary Similarity with functions embeddings.
 - Compiler Classification
@@ -14,5 +14,5 @@ If you include this code inside your project please cite:
 
 Massarelli L., Di Luna G. A., Petroni F., Querzon L., Baldoni R. 
 Investigating Graph Embedding Neural Networks with Unsupervised Features Extraction for Binary Analysis. 
-To Appear in In Symposium on Network and Distributed System Security (NDSS), Workshop on Binary Analysis Research. 2019
+To Appear in: In Symposium on Network and Distributed System Security (NDSS), Workshop on Binary Analysis Research. 2019.
 
