@@ -24,7 +24,8 @@ class Flags:
         parser = argparse.ArgumentParser(description=' cryptoarb.')
 
         parser.add_argument("-o", "--output", dest="output_file", help="output directory for logging and models", required=False)
-        parser.add_argument("-e", "--embedder", dest="embedder_file", help="file with the embedder for the instructions",required=False)
+        parser.add_argument("-e", "--embedding_matrix", dest="embedding_matrix", help="file with the embedding matrix for the instructions",required=False)
+        parser.add_argument("-j", "--json_asm2id", dest="json_asm2id",help="file with the dictionary of instructions ids", required=False)
         parser.add_argument("-n", "--dbName", dest="db_name", help="Name of the database", required=False)
         parser.add_argument("-ld","--load_dir", dest="load_dir", help="Load the model from directory load_dir", required=False)
         parser.add_argument("-nn","--network_type", help="network type: Arith_Mean, Weighted_Mean, RNN, CCS", required=True, dest="network_type")
@@ -32,19 +33,18 @@ class Flags:
         parser.add_argument("-te","--trainable_embedding", help="if present the network consider the embedding as trainable", action="store_true", dest="trainable_embeddings", default=False)
         parser.add_argument("-cv","--cross_val", help="if present the training is done with cross validiation", default=False, action="store_true", dest="cross_val")
 
-
         args = parser.parse_args()
         self.network_type = args.network_type
 
         if self.network_type == "Annotations":
             self.feature_type = 'acfg'
-        elif self.network_type in ["Arith_Mean", "Weighted_Mean", "RNN","Attention","RNN_SINGLE"]:
+        elif self.network_type in ["Arith_Mean", "Attention_Mean", "RNN"]:
             self.feature_type = 'lstm_cfg'
         else:
             print("ERROR NETWORK NOT FOUND")
             exit(0)
 
-        self.batch_size = 250           # minibatch size (-1 = whole dataset)
+        self.batch_size = 200           # minibatch size (-1 = whole dataset)
         self.num_epochs = 50            # number of epochs
         self.embedding_size = 64        # dimension of latent layers
         self.learning_rate = 0.001      # init learning_rate
@@ -68,7 +68,8 @@ class Flags:
 
         self.reset_logdir()
 
-        self.embedder_file=args.embedder_file
+        self.file_embedding_matrix = args.embedding_matrix
+        self.json_asm2id = args.json_asm2id
 
         self.MAX_NUM_VERTICES = 150
         self.MIN_NUM_VERTICES = 1

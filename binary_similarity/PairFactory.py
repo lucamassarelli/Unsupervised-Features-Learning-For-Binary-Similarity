@@ -7,8 +7,11 @@ import numpy as np
 from scipy import sparse
 import sqlite3
 from threading import Thread
-from binary_similarity.utils import __convertInstructions as convertInstructions
 from binary_similarity.utils import __padAndFilterLSTM as padAndFilterLSTM
+from binary_similarity.utils import __padAndFilter as padAndFilter
+from binary_similarity.InstructionsConverter import InstructionsConverter
+from binary_similarity.FunctionNormalizer import FunctionNormalizer
+
 
 class DatasetGenerator:
 
@@ -18,27 +21,33 @@ class DatasetGenerator:
 
 class PairFactory(DatasetGenerator):
 
-    def __init__(self, db_name, feature_type, dataset_type, embedder, max_instructions, max_num_vertices, functions=False):
+    def __init__(self, db_name, feature_type, dataset_type, json_asm2id, max_instructions, max_num_vertices):
         self.db_name = db_name
         self.feature_type = feature_type
         self.dataset_type = dataset_type
-        self.embedder = embedder
         self.max_instructions = max_instructions
         self.max_num_vertices = max_num_vertices
         self.batch_dim = 0
         self.num_pairs = 0
         self.num_batches = 0
-        self.functions=functions
-        if self.functions:
-            self.max_num_vertices=1
+        self.converter = InstructionsConverter(json_asm2id)
+        self.normalizer = FunctionNormalizer(self.max_instructions)
 
     def get_data_from_cfg(self, cfg):
-        adj = nx.adjacency_matrix(cfg)
-        nodes = cfg.nodes(data=True)
+        adj = sparse.csr_matrix([1,1])
+        lenghts = []
         node_matrix = []
-        for i, n in enumerate(nodes):
-            node_matrix.append(n[1]['features'])
-        return adj, node_matrix
+
+        try:
+            adj = nx.adjacency_matrix(cfg)
+            nodes = cfg.nodes(data=True)
+            for i, n in enumerate(nodes):
+                filtered = self.converter.convert_to_ids(n[1]['features'])
+                lenghts.append(len(filtered))
+                node_matrix.append(self.normalizer.normalize(filtered)[0])
+        except:
+            pass
+        return adj, node_matrix, lenghts
 
     def remove_bad_acfg_node(self, g):
         nodeToRemove = []
@@ -55,8 +64,14 @@ class PairFactory(DatasetGenerator):
         node_matrix = np.zeros([num_node, 8])
         for i, n in enumerate(nodes):
             f = n[1]['features']
-            node_matrix[i, 0] = len(f['constant'])
-            node_matrix[i, 1] = len(f['string'])
+            if isinstance(f['constant'], list):
+                node_matrix[i, 0] = len(f['constant'])
+            else:
+                node_matrix[i, 0] = f['constant']
+            if isinstance(f['string'], list):
+                node_matrix[i, 1] = len(f['string'])
+            else:
+                node_matrix[i, 1] = f['string']
             node_matrix[i, 2] = f['transfer']
             node_matrix[i, 3] = f['call']
             node_matrix[i, 4] = f['instruction']
@@ -73,7 +88,8 @@ class PairFactory(DatasetGenerator):
         else:
             adj = sparse.bsr_matrix(np.zeros([1, 1]))
             node_matrix = np.zeros([1, 8])
-        return adj, node_matrix
+        lenght = 8
+        return adj, node_matrix, lenght
 
     def async_chunker(self, epoch, number_of_pairs, shuffle=True):
         self.num_pairs = 0
@@ -109,6 +125,7 @@ class PairFactory(DatasetGenerator):
 
         pairs = []
         labels = []
+        lenghts = []
 
         q = cur.execute("SELECT true_pair, false_pair from " + self.dataset_type + " WHERE id=?", (int(epoch_number),))
         true_pairs_id, false_pairs_id = q.fetchone()
@@ -127,42 +144,45 @@ class PairFactory(DatasetGenerator):
             p = true_pairs_id[chunk * int(number_of_pairs/2) + i]
             q0 = cur.execute("SELECT " + self.feature_type + " FROM " + self.feature_type + " WHERE id=?", (p[0],))
             if self.feature_type == 'acfg':
-                adj0, node0 = self.get_data_from_acfg(json_graph.adjacency_graph(json.loads(q0.fetchone()[0])))
+                adj0, node0, lenghts0 = self.get_data_from_acfg(json_graph.adjacency_graph(json.loads(q0.fetchone()[0])))
             elif self.feature_type == 'lstm_cfg':
-                adj0, node0 = self.get_data_from_cfg(json_graph.adjacency_graph(json.loads(q0.fetchone()[0])))
+                adj0, node0, lenghts0 = self.get_data_from_cfg(json_graph.adjacency_graph(json.loads(q0.fetchone()[0])))
 
             q1 = cur.execute("SELECT " + self.feature_type + " FROM " + self.feature_type + " WHERE id=?", (p[1],))
             if self.feature_type == 'acfg':
-                adj1, node1 = self.get_data_from_acfg(json_graph.adjacency_graph(json.loads(q0.fetchone()[0])))
+                adj1, node1, lenghts1 = self.get_data_from_acfg(json_graph.adjacency_graph(json.loads(q0.fetchone()[0])))
             elif self.feature_type == 'lstm_cfg':
-                adj1, node1 = self.get_data_from_cfg(json_graph.adjacency_graph(json.loads(q1.fetchone()[0])))
+                adj1, node1, lenghts1 = self.get_data_from_cfg(json_graph.adjacency_graph(json.loads(q1.fetchone()[0])))
 
             pairs.append(((adj0, node0), (adj1, node1)))
+            lenghts.append([lenghts0, lenghts1])
             labels.append(+1)
 
             p = false_pairs_id[chunk * int(number_of_pairs/2) + i]
             q0 = cur.execute("SELECT " + self.feature_type + " FROM " + self.feature_type + " WHERE id=?", (p[0],))
             if self.feature_type == 'acfg':
-                adj0, node0 = self.get_data_from_acfg(json_graph.adjacency_graph(json.loads(q0.fetchone()[0])))
+                adj0, node0,lenghts0 = self.get_data_from_acfg(json_graph.adjacency_graph(json.loads(q0.fetchone()[0])))
             elif self.feature_type == 'lstm_cfg':
-                adj0, node0 = self.get_data_from_cfg(json_graph.adjacency_graph(json.loads(q0.fetchone()[0])))
+                adj0, node0, lenghts0 = self.get_data_from_cfg(json_graph.adjacency_graph(json.loads(q0.fetchone()[0])))
 
             q1 = cur.execute("SELECT " + self.feature_type + " FROM " + self.feature_type + " WHERE id=?", (p[1],))
             if self.feature_type == 'acfg':
-                adj1, node1 = self.get_data_from_acfg(json_graph.adjacency_graph(json.loads(q0.fetchone()[0])))
+                adj1, node1, lenghts1 = self.get_data_from_acfg(json_graph.adjacency_graph(json.loads(q0.fetchone()[0])))
             elif self.feature_type == 'lstm_cfg':
-                adj1, node1 = self.get_data_from_cfg(json_graph.adjacency_graph(json.loads(q1.fetchone()[0])))
+                adj1, node1, lenghts1 = self.get_data_from_cfg(json_graph.adjacency_graph(json.loads(q1.fetchone()[0])))
 
             pairs.append(((adj0, node0), (adj1, node1)))
+            lenghts.append([lenghts0, lenghts1])
             labels.append(-1)
 
             i += 2
-
-        pairs, labels, lenghts = convertInstructions(pairs, labels, self.embedder, filter=self.max_instructions)
-        pairs, labels, output_len = padAndFilterLSTM(pairs, labels, lenghts, self.max_num_vertices, 1)
+        if self.feature_type == 'acfg':
+            pairs, labels, output_len = padAndFilter(pairs, labels, self.max_num_vertices)
+        elif self.feature_type == 'lstm_cfg':
+            pairs, labels, output_len = padAndFilterLSTM(pairs, labels, lenghts, self.max_num_vertices)
         return pairs, labels, output_len
 
-    def async_create_pair(self, epoch, n_chunk, number_of_pairs, q):
+    def async_create_pairs(self, epoch, n_chunk, number_of_pairs, q):
         for i in range(0, n_chunk):
             pairs, y_, lenghts = self.get_pair_from_db(epoch, i, number_of_pairs)
             q.put((pairs, y_, lenghts), block=True)

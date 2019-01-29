@@ -45,14 +45,10 @@ class S2VTrainer:
         self.session = None
         self.db_name = flags.db_name
         self.feature_type = flags.feature_type
-        self.embedder_file = flags.embedder_file
+        self.json_asm2id = flags.json_asm2id
         self.trainable_embeddings = flags.trainable_embeddings
         self.network_type = flags.network_type
         self.cross_val = flags.cross_val
-        self.functions=False
-        self.attention_hops=flags.attention_hops
-        self.attention_depth = flags.attention_detph
-        self.dense_layer_size = flags.dense_layer_size
 
         random.seed(self.seed)
         np.random.seed(self.seed)
@@ -288,18 +284,14 @@ class S2VTrainer:
             stat_file = open(str(self.logdir) + "/epoch_stats.tsv", "w")
             stat_file.write("#epoch\ttrain_loss\tval_loss\tval_auc\ttest_loss\ttest_auc\n")
 
-            f = open(self.embedder_file, 'rb')
-            self.embedder = pickle.load(f, encoding='latin1')
-            f.close()
+            p_train = PairFactory(self.db_name, self.feature_type, 'train_pairs', self.json_asm2id,
+                                  self.max_instructions, self.max_nodes)
 
-            p_train = PairFactory(self.db_name, self.feature_type, 'train_pairs', self.embedder,
-                                  self.max_instructions, self.max_nodes,self.functions)
+            p_validation = PairFactory(self.db_name, self.feature_type, 'validation_pairs', self.json_asm2id,
+                                  self.max_instructions, self.max_nodes)
 
-            p_validation = PairFactory(self.db_name, self.feature_type, 'validation_pairs', self.embedder,
-                                  self.max_instructions, self.max_nodes,self.functions)
-
-            p_test = PairFactory(self.db_name, self.feature_type, 'test_pairs', self.embedder,
-                                  self.max_instructions, self.max_nodes,self.functions)
+            p_test = PairFactory(self.db_name, self.feature_type, 'test_pairs', self.json_asm2id,
+                                  self.max_instructions, self.max_nodes)
 
             step = 0
             for epoch in range(0, self.num_epochs):
@@ -329,7 +321,7 @@ class S2VTrainer:
                         feed_dict=feed_dict)
 
                     sys.stdout.write(
-                        "\r\t Pairs in current batch {}, training batch {} / {} -- {}% ".format(len(len1_batch),n_batch, p_train.num_batches, float(n_batch)/p_train.num_batches))
+                        "\r\t Pairs in current batch {}, training batch {} / {} -- {} ".format(len(len1_batch),n_batch, p_train.num_batches, float(n_batch)/p_train.num_batches))
                     sys.stdout.flush()
                     n_batch = n_batch+1
 
@@ -349,7 +341,8 @@ class S2VTrainer:
                 epoch_msg += "\n"
                 val_y = []
                 val_pred = []
-                for adj1_batch, nodes1_batch,  adj2_batch, nodes2_batch, y_batch, len1_batch, len2_batch in p_validation.async_chunker(0, self.batch_size):
+                for adj1_batch, nodes1_batch,  adj2_batch, nodes2_batch, y_batch, len1_batch, len2_batch in p_validation.async_chunker(0, self.batch_size*2):
+
                     feed_dict = {
                         self.network.x_1: nodes1_batch,
                         self.network.adj_1: adj1_batch,
@@ -409,7 +402,7 @@ class S2VTrainer:
                     test_y = []
                     test_pred = []
                     for adj1_batch, nodes1_batch, adj2_batch, nodes2_batch, y_batch, len1_batch, len2_batch in \
-                            p_test.async_chunker(0, self.batch_size):
+                            p_test.async_chunker(0, self.batch_size*2):
 
                         feed_dict = {
                             self.network.x_1: nodes1_batch,
