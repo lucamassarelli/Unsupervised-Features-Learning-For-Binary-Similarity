@@ -48,14 +48,12 @@ class S2VTrainerLSTM:
         self.session = None
         self.db_name = flags.db_name
         self.feature_type = flags.feature_type
-        self.embedder_file = flags.embedder_file
+        self.json_asm2id = flags.json_asm2id
         self.trainable_embeddings = flags.trainable_embeddings
         self.network_type = flags.network_type
         self.cross_val = flags.cross_val
         self.dense_layer_size = flags.dense_layer_size
-        self.attention_hops= flags.attention_hops
-        self.attention_depth=flags.attention_detph
-        self.flags=flags
+        self.flags = flags
         self.functions = False
 
         if flags.class_kind == "CMP" or flags.class_kind=="FML":
@@ -279,16 +277,12 @@ class S2VTrainerLSTM:
             stat_file = open(str(self.logdir) + "/epoch_stats.tsv", "w")
             stat_file.write("#epoch\ttrain_loss\tval_loss\tval_auc\ttest_loss\ttest_auc\n")
 
-            f = open(self.embedder_file, 'rb')
-            self.embedder = pickle.load(f, encoding='latin1')
-            f.close()
-
             print("Creating functions factories...")
             sys.stdout.flush()
 
-            p_train = FunctionFactory(self.db_name, self.feature_type, 'train', self.embedder, self.max_instructions, self.max_nodes, self.encoder,self.batch_size,self.flags, functions=self.functions)
-            p_validation = FunctionFactory(self.db_name, self.feature_type, 'validation', self.embedder, self.max_instructions, self.max_nodes, self.encoder,self.batch_size,self.flags, functions=self.functions)
-            p_test = FunctionFactory(self.db_name, self.feature_type, 'test', self.embedder,self.max_instructions, self.max_nodes, self.encoder,self.batch_size,self.flags, functions=self.functions)
+            p_train = FunctionFactory(self.db_name, self.feature_type, 'train', self.json_asm2id, self.max_instructions, self.max_nodes, self.encoder,self.batch_size,self.flags)
+            p_validation = FunctionFactory(self.db_name, self.feature_type, 'validation', self.json_asm2id, self.max_instructions, self.max_nodes, self.encoder,self.batch_size,self.flags)
+            p_test = FunctionFactory(self.db_name, self.feature_type, 'test', self.json_asm2id,self.max_instructions, self.max_nodes, self.encoder,self.batch_size,self.flags)
 
             print("Starting train!")
             sys.stdout.flush()

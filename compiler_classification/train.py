@@ -4,12 +4,8 @@
 # distributed under license: CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode.txt) #
 #
 
-from s2v_trainer import S2VTrainerLSTM
-from parameters import Flags
-import sys
-sys.path.append('../')
-from embedding_util.embedder import Embedder
-import pickle
+from compiler_classification.s2v_trainer import S2VTrainerLSTM
+from compiler_classification.parameters import Flags
 import numpy as np
 
 
@@ -19,13 +15,9 @@ def run_test():
 
     print(str(flags))
 
-    file_embedder=flags.embedder_file
+    file_embedding_matrix = flags.file_embedding_matrix
 
-    file = open(file_embedder,'rb')
-    embedder = pickle.load(file, encoding='latin1')
-    file.close()
-
-    embedding_matrix = embedder.orderedMatrix()
+    embedding_matrix = np.float32(np.load(file_embedding_matrix))
     if flags.random_embedding:
         embedding_matrix = np.random.rand(*np.shape(embedding_matrix)).astype(np.float32)
         embedding_matrix[0, :] = np.zeros(np.shape(embedding_matrix)[1]).astype(np.float32)

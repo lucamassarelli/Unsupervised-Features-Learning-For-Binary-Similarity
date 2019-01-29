@@ -4,8 +4,9 @@
 # distributed under license: CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode.txt) #
 #
 
-from compiler_classification.utils import __convertInstructions as convertInstructions
 from compiler_classification.utils import __padAndFilter as padAndFilter
+from asm_embedding.InstructionsConverter import InstructionsConverter
+from asm_embedding.FunctionNormalizer import FunctionNormalizer
 import json
 from multiprocessing import Queue
 from multiprocessing import Process
@@ -17,6 +18,7 @@ from scipy import sparse
 import sqlite3
 
 
+
 class DatasetGenerator:
 
     def get_dataset(self, epoch_number):
@@ -25,19 +27,21 @@ class DatasetGenerator:
 
 class PairFactory(DatasetGenerator):
 
-    def __init__(self, db_name, feature_type, dataset_type, embedder, max_instructions, max_num_vertices, encoder,batch_size,flags=None, functions=False):
+    def __init__(self, db_name, feature_type, dataset_type, json_asm2id, max_instructions, max_num_vertices, encoder, batch_size, flags=None):
         self.db_name = db_name
         self.feature_type = feature_type
         self.dataset_type = dataset_type
-        self.embedder = embedder
+        self.encoder = encoder
         self.max_instructions = max_instructions
         self.max_num_vertices = max_num_vertices
         self.batch_dim = 0
         self.num_pairs = 0
         self.num_batches = 0
-        self.encoder = encoder
         self.flags=flags
-        self.functions=functions
+
+        self.converter = InstructionsConverter(json_asm2id)
+        self.normalizer = FunctionNormalizer(self.max_instructions)
+
         conn = sqlite3.connect(self.db_name)
         cur = conn.cursor()
         q = cur.execute("SELECT count(*) from " + self.dataset_type)
@@ -46,8 +50,6 @@ class PairFactory(DatasetGenerator):
 
         self.num_batches = n_chunk
         conn.close()
-        if functions:
-            self.max_num_vertices = 1
 
     def remove_bad_acfg_node(self, g):
         nodeToRemove = []
@@ -98,26 +100,24 @@ class PairFactory(DatasetGenerator):
         else:
             adj = sparse.bsr_matrix(np.zeros([1, 1]))
             node_matrix = np.zeros([1, 8])
-        return adj, node_matrix
+        lenghts = [8] * len(node_matrix)
+        return adj, node_matrix, lenghts
 
     def get_data_from_cfg(self, cfg):
-        adj = nx.adjacency_matrix(cfg)
-        nodes = cfg.nodes(data=True)
-        node_matrix = []
-        for i, n in enumerate(nodes):
-            node_matrix.append(n[1]['features'])
-        return adj, node_matrix
-
-    def reverse_graph(self, cfg):
-        instructions = []
         adj = sparse.csr_matrix([1, 1])
-        node_addr = list(cfg.nodes())
-        node_addr.sort()
-        nodes = cfg.nodes(data=True)
-        for addr in node_addr:
-            if 'features' in nodes[addr]:
-                instructions.extend(nodes[addr]['features'])
-        return adj, [instructions]
+        lenghts = []
+        node_matrix = []
+
+        try:
+            adj = nx.adjacency_matrix(cfg)
+            nodes = cfg.nodes(data=True)
+            for i, n in enumerate(nodes):
+                filtered = self.converter.convert_to_ids(n[1]['features'])
+                lenghts.append(len(filtered))
+                node_matrix.append(self.normalizer.normalize(filtered)[0])
+        except:
+            pass
+        return adj, node_matrix, lenghts
 
     def async_chunker(self, epoch, batch_size, shuffle=True):
         self.num_pairs = 0
@@ -135,11 +135,11 @@ class PairFactory(DatasetGenerator):
         self.num_batches = n_chunk
         lista_chunk=range(0,n_chunk)
         coda = Queue(maxsize=50)
-        n_proc=10
-        listone =self.split(lista_chunk,n_proc)
+        n_proc = 10
+        listone = self.split(lista_chunk, n_proc)
         for i in range(0,n_proc):
-            l=random.shuffle(listone[i])
-            p=Process(target=self.async_create_pair,args=((epoch, l, batch_size, coda, self.encoder,shuffle)))
+            l = list(listone[i])
+            p = Process(target=self.async_create_pair,args=((epoch, l, batch_size, coda, shuffle, self.encoder)))
             p.start()
 
         while coda.empty():
@@ -147,13 +147,14 @@ class PairFactory(DatasetGenerator):
         for i in range(0, n_chunk):
             yield self.async_get_dataset(i, n_chunk, batch_size, coda, shuffle)
 
-    def get_pair_from_db(self, epoch_number, chunk, number_of_functions, enconder):
+    def get_pair_from_db(self, epoch_number, chunk, number_of_functions, label_encoder):
 
         conn = sqlite3.connect(self.db_name)
         cur = conn.cursor()
 
         functions = []
         labels = []
+        lenghts = []
 
         q = cur.execute("SELECT id FROM " + self.dataset_type)
         ids = q.fetchall()
@@ -170,13 +171,13 @@ class PairFactory(DatasetGenerator):
             q = cur.execute("SELECT " + self.feature_type + " FROM " + self.feature_type + " WHERE id=?", ii)
 
             if self.feature_type == 'acfg':
-                adj, node = self.get_data_from_acfg(json_graph.adjacency_graph(json.loads(q.fetchone()[0])))
-            elif self.feature_type == 'lstm_cfg' and not self.functions:
-                adj, node = self.get_data_from_cfg(json_graph.adjacency_graph(json.loads(q.fetchone()[0])))
-            elif self.feature_type == 'lstm_cfg' and self.functions:
-                adj, node = self.reverse_graph(json_graph.adjacency_graph(json.loads(q.fetchone()[0])))
+                adj, node, lenghts0 = self.get_data_from_acfg(json_graph.adjacency_graph(json.loads(q.fetchone()[0])))
+            elif self.feature_type == 'lstm_cfg':
+                adj, node, lenghts0 = self.get_data_from_cfg(json_graph.adjacency_graph(json.loads(q.fetchone()[0])))
 
             functions.append([(adj, node)])
+            lenghts.append(lenghts0)
+
             if self.flags is None or self.flags.class_kind == "CMP" or self.flags.class_kind == "FML":
                 query_str = "SELECT  compiler FROM functions WHERE id=?"
             elif self.flags.class_kind == "CMPOPT":
@@ -194,21 +195,20 @@ class PairFactory(DatasetGenerator):
             else:
                 compiler = q_compiler[0]
 
-            encoded = enconder.transform([compiler])
+            encoded = label_encoder.transform([compiler])
             labels.append(encoded)
             i += 1
 
         if self.feature_type == 'acfg':
-            pairs, labels, output_len = padAndFilter(functions, labels, [[[1]]]*len(functions), self.max_num_vertices, 1)
+            pairs, labels, output_len = padAndFilter(functions, labels, [[[1]]]*len(functions), self.max_num_vertices)
             output_len = [[1]]
 
         elif self.feature_type == 'lstm_cfg':
-            functions, labels, lenghts = convertInstructions(functions, labels, self.embedder, filter=self.max_instructions)
-            pairs, labels, output_len = padAndFilter(functions, labels, lenghts, self.max_num_vertices, 1)
+            pairs, labels, output_len = padAndFilter(functions, labels, lenghts, self.max_num_vertices)
 
         return pairs, labels, output_len
 
-    def async_create_pair(self, epoch, n_chunk, number_of_functions, q, encoder,shuffle):
+    def async_create_pair(self, epoch, n_chunk, number_of_functions, q, shuffle, encoder):
 
         for i in n_chunk:
             pairs, y, lenghts = self.get_pair_from_db(epoch, i, number_of_functions, encoder)
@@ -225,13 +225,6 @@ class PairFactory(DatasetGenerator):
             y_ = []
             for yy in y:
                 y_.append(yy[0])
-
-            if shuffle:
-                shuffle_indices = np.random.permutation(np.arange(n_samples))
-                adj1 = np.array(adj1)[shuffle_indices]
-                nodes1 = np.array(nodes1)[shuffle_indices]
-                y_ = np.array(y_)[shuffle_indices]
-                len1 = np.array(len1)[shuffle_indices]
 
             for i in range(0, n_samples, number_of_functions):
                 upper_bound = min(i + number_of_functions, n_samples)

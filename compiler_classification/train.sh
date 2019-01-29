@@ -8,10 +8,10 @@ NETWORK_TYPE="Attention_Mean"
 # NETWORK_TYPE="Annotations"
 
 # What to classify:
-CLASSIFICATION_KIND="FML"      # Compiler Family
-# CLASSIFICATION_KIND="CMP"      # Compiler Family + Version
-# CLASSIFICATION_KIND="CMPOPT"   # Compiler Familt + Version + Optimization
-# CLASSIFICATION_KIND="OPT"      # Optimization
+# CLASSIFICATION_KIND="Family"      # Compiler Family
+CLASSIFICATION_KIND="Compiler"      # Compiler Family + Version
+# CLASSIFICATION_KIND="Compiler+Opt"   # Compiler Familt + Version + Optimization
+# CLASSIFICATION_KIND="Opt"      # Optimization
 
 # Root path for binary similarity task
 BASE_PATH="../binary_similarity"
@@ -23,10 +23,13 @@ EXPERIMENT_PATH=$BASE_PATH/experiments/
 MODEL_PATH=$EXPERIMENT_PATH/out
 
 # Path to the sqlite db with diassembled functions
-DB_PATH=$BASE_PATH/data/openSSL_data.db
+DB_PATH=../data/openSSL_data.db
 
-# Path to pickle embedder
-EMBEDDER=$BASE_PATH/word2vec/embedder.pkl
+# Path to embedding matrix
+EMBEDDING_MATRIX=../data/i2v/embedding_matrix.npy
+
+# Path to instruction2id dictionary
+INS2ID=../data/i2v/word2id.json
 
 # Add this argument to train.py to use random instructions embeddings
 RANDOM_EMBEDDINGS="-r"
@@ -34,5 +37,5 @@ RANDOM_EMBEDDINGS="-r"
 # Add this argument to train.py to use trainable instructions embeddings
 TRAINABLE_EMBEDDINGS="-te"
 
-python3 train.py --o $OUT_PATH -n $DB_PATH -nn $NETWORK_TYPE -e $EMBEDDER -cl $CLASSIFICATION_KIND
+python3 train.py --o $MODEL_PATH -n $DB_PATH -nn $NETWORK_TYPE -e $EMBEDDING_MATRIX -j $INS2ID -cl $CLASSIFICATION_KIND
 

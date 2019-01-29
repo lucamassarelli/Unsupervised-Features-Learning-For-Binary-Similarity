@@ -6,7 +6,7 @@
 import json
 import r2pipe
 import networkx as nx
-from BlockFeaturesExtractor import BlockFeaturesExtractor
+from dataset_creation.BlockFeaturesExtractor import BlockFeaturesExtractor
 
 
 class Dict2Obj(object):
@@ -22,11 +22,10 @@ class Dict2Obj(object):
 
 class RadareFunctionAnalyzer:
 
-    def __init__(self, filename, use_symbol, depth):
+    def __init__(self, filename, use_symbol):
         self.r2 = r2pipe.open(filename, flags=['-2'])
         self.filename = filename
         self.arch, _ = self.get_arch()
-        self.top_depth = depth
         self.use_symbol = use_symbol
 
     def __enter__(self):
@@ -63,14 +62,14 @@ class RadareFunctionAnalyzer:
     def filter_memory_references(i):
         inst = "" + i["mnemonic"]
 
-        for op in i["operands"]:
+        for op in i["opex"]["operands"]:
             if op["type"] == 'reg':
                 inst += " " + RadareFunctionAnalyzer.filter_reg(op)
             elif op["type"] == 'imm':
                 inst += " " + RadareFunctionAnalyzer.filter_imm(op)
             elif op["type"] == 'mem':
                 inst += " " + RadareFunctionAnalyzer.filter_mem(op)
-            if len(i["operands"]) > 1:
+            if len(i["opex"]["operands"]) > 1:
                 inst = inst + ","
 
         if "," in inst:
@@ -98,7 +97,7 @@ class RadareFunctionAnalyzer:
             #for op in insn['opex']['operands']:
             #    operands.append(Dict2Obj(op))
             #insn['operands'] = operands
-            stringized = RadareFunctionAnalyzer.filterMemoryReferences(insn)
+            stringized = RadareFunctionAnalyzer.filter_memory_references(insn)
             if "x86" in self.arch:
                 stringized = "X_" + stringized
             elif "arm" in self.arch:
@@ -126,7 +125,7 @@ class RadareFunctionAnalyzer:
         return disasm, bytes, annotations, filtered_instructions
 
     def function_to_cfg(self, func):
-        if self.use_symbols:
+        if self.use_symbol:
             s = 'vaddr'
         else:
             s = 'offset'
@@ -153,12 +152,12 @@ class RadareFunctionAnalyzer:
             lstm_cfg.add_node(block['offset'], features=filtered_instructions)
 
         for block in cfg['blocks']:
-            if block.has_key('jump'):
+            if 'jump' in block:
                 if block['jump'] in my_cfg.nodes:
                     my_cfg.add_edge(block['offset'],block['jump'])
                     acfg.add_edge(block['offset'], block['jump'])
                     lstm_cfg.add_edge(block['offset'], block['jump'])
-            if block.has_key('fail'):
+            if 'fail' in block:
                 if block['fail'] in my_cfg.nodes:
                     my_cfg.add_edge(block['offset'],block['fail'])
                     acfg.add_edge(block['offset'], block['fail'])

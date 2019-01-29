@@ -341,7 +341,7 @@ class S2VTrainer:
                 epoch_msg += "\n"
                 val_y = []
                 val_pred = []
-                for adj1_batch, nodes1_batch,  adj2_batch, nodes2_batch, y_batch, len1_batch, len2_batch in p_validation.async_chunker(0, self.batch_size*2):
+                for adj1_batch, nodes1_batch,  adj2_batch, nodes2_batch, y_batch, len1_batch, len2_batch in p_validation.async_chunker(0, self.batch_size):
 
                     feed_dict = {
                         self.network.x_1: nodes1_batch,
@@ -402,7 +402,7 @@ class S2VTrainer:
                     test_y = []
                     test_pred = []
                     for adj1_batch, nodes1_batch, adj2_batch, nodes2_batch, y_batch, len1_batch, len2_batch in \
-                            p_test.async_chunker(0, self.batch_size*2):
+                            p_test.async_chunker(0, self.batch_size):
 
                         feed_dict = {
                             self.network.x_1: nodes1_batch,

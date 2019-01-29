@@ -43,7 +43,7 @@ class DataSplitter:
     def select_dissimilar_cfg(ids, provenance, cursor):
         while True:
             id_dissimilar = random.choice(ids)
-            q2 = cursor.execute('SELECT project, file_name, function_name FROM functions WHERE id=?', id_dissimilar)
+            q2 = cursor.execute('SELECT project, file_name, function_name FROM functions WHERE id=?', (id_dissimilar,))
             res = q2.fetchone()
             if res != provenance:
                 break
@@ -55,12 +55,13 @@ class DataSplitter:
         conn = sqlite3.connect(self.db_name)
         cur = conn.cursor()
         ids = cur.execute("SELECT id FROM "+id_table).fetchall()
-        id_set=set(ids)
+        ids = [i[0] for i in ids]
+        id_set = set(ids)
         true_pair = []
         false_pair = []
 
         for my_id in tqdm(ids):
-            q = cur.execute('SELECT project, file_name, function_name FROM functions WHERE id =?', my_id)
+            q = cur.execute('SELECT project, file_name, function_name FROM functions WHERE id =?', (my_id,))
             cfg_0_provenance = q.fetchone()
             id_sim = DataSplitter.select_similar_cfg(my_id, cfg_0_provenance, id_set, cur)
             id_dissim = DataSplitter.select_dissimilar_cfg(ids, cfg_0_provenance, cur)

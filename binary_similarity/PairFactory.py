@@ -1,4 +1,3 @@
-from binary_similarity.embedder import Embedder
 import json
 from multiprocessing import Queue
 import networkx as nx
@@ -9,9 +8,8 @@ import sqlite3
 from threading import Thread
 from binary_similarity.utils import __padAndFilterLSTM as padAndFilterLSTM
 from binary_similarity.utils import __padAndFilter as padAndFilter
-from binary_similarity.InstructionsConverter import InstructionsConverter
-from binary_similarity.FunctionNormalizer import FunctionNormalizer
-
+from asm_embedding.InstructionsConverter import InstructionsConverter
+from asm_embedding.FunctionNormalizer import FunctionNormalizer
 
 class DatasetGenerator:
 

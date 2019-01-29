@@ -42,22 +42,20 @@ class DatabaseFactory:
             return
         pool_sem.acquire()
         conn = sqlite3.connect(db_name)
-        cur = conn.cursor()
-        cur.execute('''INSERT INTO functions VALUES (?,?,?,?,?,?,?,?)''', (None,  # id
-                                                                         path[-4],  # project
-                                                                         path[-3],  # compiler
-                                                                         path[-2],  # optimization
-                                                                         path[-1],  # file_name
-                                                                         function_name # function_name
-                                                                         ))
-        inserted_id = cur.lastrowid
-
         cfg = DatabaseFactory.to_jsongraph(func["cfg"])
+        cur = conn.cursor()
+        cur.execute('''INSERT INTO functions VALUES (?,?,?,?,?,?,?)''', (None,            # id
+                                                                         path[-4],      # project
+                                                                         path[-3],      # compiler
+                                                                         path[-2],      # optimization
+                                                                         path[-1],      # file_name
+                                                                         function_name, # function_name
+                                                                         cfg))
+
+        inserted_id = cur.lastrowid
         acfg = DatabaseFactory.to_jsongraph(func["acfg"])
         lstm_cfg = DatabaseFactory.to_jsongraph(func["lstm_cfg"])
 
-        cur.execute('''INSERT INTO cfg VALUES (?,?)''', (inserted_id, cfg))
-        conn.commit()
         cur.execute('''INSERT INTO acfg VALUES (?,?)''', (inserted_id, acfg))
         conn.commit()
         cur.execute('''INSERT INTO lstm_cfg VALUES (?,?)''', (inserted_id, lstm_cfg))
@@ -74,10 +72,8 @@ class DatabaseFactory:
         filename = item[0]
         db = item[1]
         use_symbol = item[2]
-        depth = item[3]
-        instruction_converter = item[4]
 
-        analyzer = RadareFunctionAnalyzer(filename, use_symbol, depth)
+        analyzer = RadareFunctionAnalyzer(filename, use_symbol)
         p = ThreadPool(1)
         res = p.apply_async(analyzer.analyze)
 
@@ -92,7 +88,7 @@ class DatabaseFactory:
                 os.killpg(0, signal.SIGKILL)
 
         for func in result:
-            DatabaseFactory.insert_in_db(db, pool_sem, result[func], filename, func, instruction_converter)
+            DatabaseFactory.insert_in_db(db, pool_sem, result[func], filename, func)
 
         analyzer.close()
 
@@ -107,13 +103,12 @@ class DatabaseFactory:
                                                                 compiler text, 
                                                                 optimization text, 
                                                                 file_name text, 
-                                                                function_name text, 
-                                                                asm text,
-                                                                num_instructions INTEGER)
-                    ''')
-        conn.execute('''CREATE TABLE  IF NOT EXISTS filtered_functions  (id INTEGER PRIMARY KEY, 
-                                                                         instructions_list text)
-                     ''')
+                                                                function_name text,
+                                                                cfg text)''')
+
+        conn.execute('''CREATE TABLE  IF NOT EXISTS acfg  (id INTEGER PRIMARY KEY, acfg text)''')
+        conn.execute('''CREATE TABLE  IF NOT EXISTS lstm_cfg  (id INTEGER PRIMARY KEY, lstm_cfg text)''')
+
         conn.commit()
         conn.close()
 
@@ -151,7 +146,7 @@ class DatabaseFactory:
         return cleaned_file_list
 
     # root function to create the db
-    def build_db(self, use_symbol, depth):
+    def build_db(self, use_symbol):
         global pool_sem
 
         pool_sem = multiprocessing.BoundedSemaphore(value=1)
@@ -164,7 +159,7 @@ class DatabaseFactory:
         print('Find ' + str(len(file_list)) + ' files to analyze')
         random.shuffle(file_list)
 
-        t_args = [(f, self.db_name, use_symbol, depth) for f in file_list]
+        t_args = [(f, self.db_name, use_symbol) for f in file_list]
 
         # Start a parallel pool to analyze files
         p = Pool(processes=None, maxtasksperchild=20)

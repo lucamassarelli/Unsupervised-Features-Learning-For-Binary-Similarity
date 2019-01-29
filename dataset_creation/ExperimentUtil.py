@@ -4,7 +4,7 @@
 # distributed under license: CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode.txt) #
 #
 import argparse
-from dataset_creation import DatabaseFactory, DataSplitter, FunctionsEmbedder
+from dataset_creation import DatabaseFactory, DataSplitter
 
 def debug_msg():
     msg =  " DATABASE UTILITY"
@@ -24,12 +24,11 @@ def debug_msg():
     return msg
 
 
-def build_configuration(db_name, root_dir, use_symbols, callee_depth):
+def build_configuration(db_name, root_dir, use_symbols):
     msg = "Database creation options: \n"
     msg += " - Database Name: {} \n".format(db_name)
     msg += " - Root dir: {} \n".format(root_dir)
     msg += " - Use symbols: {} \n".format(use_symbols)
-    msg += " - Callee depth: {} \n".format(callee_depth)
     return msg
 
 
@@ -64,7 +63,6 @@ if __name__ == '__main__':
 
     parser.add_argument("-dir", "--dir",     help="Root path of the directory to scan")
     parser.add_argument("-sym", "--symbols", help="Use it if you want to use symbols", action="store_true")
-    parser.add_argument("-dep", "--depth",   help="Recursive depth for analysis",      default=0, type=int)
 
     parser.add_argument("-test", "--test_size", help="Test set size [0-1]",            type=float, default=0.2)
     parser.add_argument("-val",  "--val_size",  help="Validation set size [0-1]",      type=float, default=0.2)
@@ -85,9 +83,9 @@ if __name__ == '__main__':
 
     if args.build:
         print("Disassemblying files and creating dataset")
-        print(build_configuration(args.db, args.dir, args.symbols, args.depth))
+        print(build_configuration(args.db, args.dir, args.symbols))
         factory = DatabaseFactory.DatabaseFactory(args.db, args.dir)
-        factory.build_db(args.symbols, args.depth)
+        factory.build_db(args.symbols)
 
     if args.split:
         print("Splitting data and generating epoch pairs")
@@ -95,11 +93,5 @@ if __name__ == '__main__':
         splitter = DataSplitter.DataSplitter(args.db)
         splitter.split_data(args.val_size, args.test_size)
         splitter.create_pairs(args.epochs)
-
-    if args.embed:
-        print("Computing embeddings for function in db")
-        print(embedd_configuration(args.db, args.model, args.batch_size, args.max_instruction, args.embeddings_table))
-        embedder = FunctionsEmbedder.FunctionsEmbedder(args.model, args.batch_size, args.max_instruction)
-        embedder.compute_and_save_embeddings_from_db(args.db, args.embeddings_table)
 
     exit(0)

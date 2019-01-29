@@ -24,7 +24,8 @@ class Flags:
         parser = argparse.ArgumentParser(description=' cryptoarb.')
 
         parser.add_argument("-o", "--output", dest="output_file", help="output directory for logging and models", required=False)
-        parser.add_argument("-e", "--embedder", dest="embedder_file", help="file with the embedder for the instructions",required=False)
+        parser.add_argument("-e", "--embedding_matrix", dest="embedding_matrix", help="file with the embedding matrix for the instructions",required=False)
+        parser.add_argument("-j", "--json_asm2id", dest="json_asm2id",help="file with the dictionary of instructions ids", required=False)
         parser.add_argument("-n", "--dbName", dest="db_name", help="Name of the database", required=False)
         parser.add_argument("-ld","--load_dir", dest="load_dir", help="Load the model from directory load_dir", required=False)
         parser.add_argument("-nn","--network_type", help="network type: Arith_Mean, Weighted_Mean, RNN, CCS", required=True, dest="network_type")
@@ -38,7 +39,7 @@ class Flags:
 
         if self.network_type == "Annotations":
             self.feature_type = 'acfg'
-        elif self.network_type in ["Arith_Mean", "Weighted_Mean", "RNN","Attention","RNN_SINGLE"]:
+        elif self.network_type in ["Arith_Mean", "Attention_Mean", "RNN"]:
             self.feature_type = 'lstm_cfg'
         else:
             print("ERROR NETWORK NOT FOUND")
@@ -73,7 +74,6 @@ class Flags:
         self.cross_val = args.cross_val
         self.cross_val_fold = 5
         self.dense_layer_size = 200
-
         self.rnn_depth = 1              # depth of the rnn
         self.max_instructions = 50      # number of instructions
         self.rnn_kind = 1               #kind of rnn cell 0: lstm cell 1: GRU cell
@@ -84,7 +84,8 @@ class Flags:
         # create logdir and logger
         self.reset_logdir()
 
-        self.embedder_file=args.embedder_file
+        self.file_embedding_matrix = args.embedding_matrix
+        self.json_asm2id = args.json_asm2id
 
         self.MAX_NUM_VERTICES = 150
         self.MIN_NUM_VERTICES = 1

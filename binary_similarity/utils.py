@@ -42,7 +42,6 @@ def __padAndFilter(input_pairs, input_labels, max_num_vertices):
 
     return output_pairs, output_labels, output_len
 
-
 def __padAndFilterLSTM(input_pairs, input_labels, input_len, max_num_vertices):
 
 

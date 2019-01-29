@@ -17,13 +17,13 @@ EXPERIMENT_PATH=$BASE_PATH/experiments/
 MODEL_PATH=$EXPERIMENT_PATH/out
 
 # Path to the sqlite db with diassembled functions
-DB_PATH=$BASE_PATH/data/openSSL_data.db
+DB_PATH=../data/openSSL_data.db
 
 # Path to embedding matrix
-EMBEDDING_MATRIX=$BASE_PATH/data/i2v/embedding_matrix.npy
+EMBEDDING_MATRIX=../data/i2v/embedding_matrix.npy
 
 # Path to instruction2id dictionary
-INS2ID=$BASE_PATH/data/i2v/word2id.json
+INS2ID=../data/i2v/word2id.json
 
 # Add this argument to train.py to use random instructions embeddings
 RANDOM_EMBEDDINGS="-r"
@@ -31,4 +31,4 @@ RANDOM_EMBEDDINGS="-r"
 # Add this argument to train.py to use trainable instructions embeddings
 TRAINABLE_EMBEDDINGS="-te"
 
-python3 binary_similarity/train.py --o $MODEL_PATH -n $DB_PATH -nn $NETWORK_TYPE -e $EMBEDDING_MATRIX -j $INS2ID
+python3 train.py --o $MODEL_PATH -n $DB_PATH -nn $NETWORK_TYPE -e $EMBEDDING_MATRIX -j $INS2ID

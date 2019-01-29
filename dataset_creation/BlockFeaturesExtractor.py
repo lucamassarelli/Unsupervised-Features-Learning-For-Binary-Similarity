@@ -6,7 +6,8 @@
 
 
 # Questa classe estra da un blocco di codice assembler le features utilizzate nell'articolo ccs17
-class BlockFeatureExtractor:
+
+class BlockFeaturesExtractor:
     x86_ARIT = 0
     x86_MOV = 0
     string = []
