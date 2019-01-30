@@ -73,7 +73,7 @@ class Flags:
         self.trainable_embeddings = args.trainable_embeddings
         self.cross_val = args.cross_val
         self.cross_val_fold = 5
-        self.dense_layer_size = 200
+        self.dense_layer_size = 3000
         self.rnn_depth = 1              # depth of the rnn
         self.max_instructions = 50      # number of instructions
         self.rnn_kind = 1               #kind of rnn cell 0: lstm cell 1: GRU cell

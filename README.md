@@ -22,6 +22,7 @@ We release the three datasets used in the paper:
     To download it:
     
     ```
+    python downloader.py -op
     ```
 
    
@@ -29,13 +30,15 @@ We release the three datasets used in the paper:
     clang-3.9 with optimizations from 0 to 3. It has been used for compiler classification. To download it:
     
     ```
+    python downloader.py -rc
     ```
     
 - **Compiler_Dataset**: It includes different projects compiled for X86 different compilers (see the paper) with 
 optimizations from 0 to 3. It has been used for compiler classification. This dataset is very huge,
 you need 30 GB of space to download it. To download it:
-
+    
     ```
+    python downloader.py -c
     ```
 
 
@@ -45,6 +48,10 @@ Before to run the experiment you need to download also the word2vec model for as
 It consists of two file, the embedding matrix and the word2id file. The latter that assigns to 
 each instruction an id. The id correspond to the relative row of the instruction inside the
 embedding matrix.
+
+ ```
+ python downloader.py -i2v
+ ```
 
 
 ### Binary Similarity
@@ -137,4 +144,7 @@ Massarelli L., Di Luna G. A., Petroni F., Querzon L., Baldoni R.
 Investigating Graph Embedding Neural Networks with Unsupervised Features Extraction for Binary Analysis. 
 To Appear in: In Symposium on Network and Distributed System Security (NDSS), Workshop on Binary Analysis Research. 2019.
 
- 
+## Aknowledgement
+
+In our code we use godown to download data from Google drive. We thank circulosmeos, the creator of godown.
+
