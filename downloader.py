@@ -43,7 +43,7 @@ class Downloader:
         self.url_i2v = "https://drive.google.com/file/d/1ndKVrot5lBPklGGFn-olEt-rCtzjv69z/view?usp=sharing"
         self.url_openSSL = "https://drive.google.com/file/d/1rgF1gVcNFq4Q24JaLYbYAOCaIUUR1EbW/view?usp=sharing"
         self.url_restricted_compiler = "https://drive.google.com/file/d/15VUJ3iwj5VHCqAXiUcr4zJgVWSCbaU_d/view?usp=sharing"
-        self.url_compiler = "https://drive.google.com/file/d/1txDjHQXBY4_DdwT3Es6zWex7ZViSIFx3/view?usp=sharing"
+        self.url_compiler = "https://drive.google.com/file/d/1fEr9N97fTsAS2NXYpYI3GRTxadaJwhTe/view?usp=sharing"
 
         self.base_path = "data"
         self.path_i2v = os.path.join(self.base_path, "")

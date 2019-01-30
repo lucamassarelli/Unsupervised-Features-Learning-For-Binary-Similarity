@@ -13,17 +13,12 @@ CLASSIFICATION_KIND="Compiler"      # Compiler Family + Version
 # CLASSIFICATION_KIND="Compiler+Opt"   # Compiler Familt + Version + Optimization
 # CLASSIFICATION_KIND="Opt"      # Optimization
 
-# Root path for binary similarity task
-BASE_PATH="../binary_similarity"
 
 # Root path for the experiment
-EXPERIMENT_PATH=$BASE_PATH/experiments/
-
-# Path for the model
-MODEL_PATH=$EXPERIMENT_PATH/out
+MODEL_PATH=experiments/
 
 # Path to the sqlite db with diassembled functions
-DB_PATH=../data/openSSL_data.db
+DB_PATH=../data/restricted_compilers_dataset.db
 
 # Path to embedding matrix
 EMBEDDING_MATRIX=../data/i2v/embedding_matrix.npy

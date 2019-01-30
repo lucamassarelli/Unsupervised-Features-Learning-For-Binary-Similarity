@@ -7,14 +7,8 @@ NETWORK_TYPE="Attention_Mean"
 #NETWORK_TYPE="RNN"
 #NETWORK_TYPE="Annotations"
 
-# Root path for binary similarity task
-BASE_PATH="binary_similarity/"
-
 # Root path for the experiment
-EXPERIMENT_PATH=$BASE_PATH/experiments/
-
-# Path for the model
-MODEL_PATH=$EXPERIMENT_PATH/out
+MODEL_PATH=experiments/
 
 # Path to the sqlite db with diassembled functions
 DB_PATH=../data/openSSL_data.db

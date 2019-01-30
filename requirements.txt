@@ -1,0 +1,7 @@
+numpy
+tensorflow
+networkx
+tqdm
+matplotlib
+sklearn
+r2pipe
