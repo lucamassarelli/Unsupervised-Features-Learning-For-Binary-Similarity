@@ -13,7 +13,13 @@ You can use the code to solve two different tasks:
 
 Following this step you will be able to reproduce the experiments of the paper!
 
-### Downloading the dataset
+### Install the requirements
+
+   ```
+    pip install -r requirements.txt
+   ```
+
+### Download datasets
 First you need to download the datasets.
 We release the three datasets used in the paper:
 
@@ -42,7 +48,7 @@ you need 30 GB of space to download it. To download it:
     ```
 
 
-### Downloading word2vec model for asm
+### Download word2vec model for asm
 
 Before to run the experiment you need to download also the word2vec model for asm.
 It consists of two file, the embedding matrix and the word2id file. The latter that assigns to 
@@ -54,7 +60,7 @@ embedding matrix.
  ```
 
 
-### Binary Similarity
+### Binary Similarity 
 
 To train the network for binary similarity task go into binary similarity folder and look at the file
 train.sh.
