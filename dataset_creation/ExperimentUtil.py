@@ -41,16 +41,6 @@ def split_configuration(db_name, val_split, test_split, epochs):
     return msg
 
 
-def embedd_configuration(db_name, model, batch_size, max_instruction, embeddings_table):
-    msg = "Embedding options: \n"
-    msg += " - Database Name: {} \n".format(db_name)
-    msg += " - Model: {} \n".format(model)
-    msg += " - Batch Size: {} \n".format(batch_size)
-    msg += " - Max Instruction per function: {} \n".format(max_instruction)
-    msg += " - Table for saving embeddings: {}.".format(embeddings_table)
-    return msg
-
-
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description=debug_msg)
@@ -59,7 +49,6 @@ if __name__ == '__main__':
 
     parser.add_argument("-b", "--build", help="Build db disassebling executables",   action="store_true")
     parser.add_argument("-s", "--split", help="Perform data splitting for training", action="store_true")
-    parser.add_argument("-e", "--embed", help="Compute functions embedding",         action="store_true")
 
     parser.add_argument("-dir", "--dir",     help="Root path of the directory to scan")
     parser.add_argument("-sym", "--symbols", help="Use it if you want to use symbols", action="store_true")
@@ -67,12 +56,6 @@ if __name__ == '__main__':
     parser.add_argument("-test", "--test_size", help="Test set size [0-1]",            type=float, default=0.2)
     parser.add_argument("-val",  "--val_size",  help="Validation set size [0-1]",      type=float, default=0.2)
     parser.add_argument("-epo",  "--epochs",    help="# Epochs to generate pairs for", type=int,    default=25)
-
-    parser.add_argument("-mod", "--model",            help="Model for embedding generation")
-    parser.add_argument("-bat", "--batch_size",       help="Batch size for function embeddings", type=int, default=500)
-    parser.add_argument("-max", "--max_instruction",  help="Maximum instruction per function", type=int,   default=150)
-    parser.add_argument("-etb", "--embeddings_table", help="Name for the table that contains embeddings",
-                        default="safe_embeddings")
 
     try:
         args = parser.parse_args()
