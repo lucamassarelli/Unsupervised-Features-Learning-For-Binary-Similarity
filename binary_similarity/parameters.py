@@ -44,7 +44,7 @@ class Flags:
             print("ERROR NETWORK NOT FOUND")
             exit(0)
 
-        self.batch_size = 200           # minibatch size (-1 = whole dataset)
+        self.batch_size = 250           # minibatch size (-1 = whole dataset)
         self.num_epochs = 50            # number of epochs
         self.embedding_size = 64        # dimension of latent layers
         self.learning_rate = 0.001      # init learning_rate

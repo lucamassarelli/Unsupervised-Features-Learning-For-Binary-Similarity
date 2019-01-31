@@ -41,7 +41,7 @@ class Downloader:
             parser.print_help(sys.__stdout__)
 
         self.url_i2v = "https://drive.google.com/file/d/1ndKVrot5lBPklGGFn-olEt-rCtzjv69z/view?usp=sharing"
-        self.url_openSSL = "https://drive.google.com/file/d/1rgF1gVcNFq4Q24JaLYbYAOCaIUUR1EbW/view?usp=sharing"
+        self.url_openSSL = "https://drive.google.com/file/d/1NnC4qCtZUDdb32Yfeq2toa94jvCKTBxZ/view?usp=sharing"
         self.url_restricted_compiler = "https://drive.google.com/file/d/15VUJ3iwj5VHCqAXiUcr4zJgVWSCbaU_d/view?usp=sharing"
         self.url_compiler = "https://drive.google.com/file/d/1fEr9N97fTsAS2NXYpYI3GRTxadaJwhTe/view?usp=sharing"
 

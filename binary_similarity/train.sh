@@ -11,7 +11,7 @@ NETWORK_TYPE="Attention_Mean"
 MODEL_PATH=experiments/
 
 # Path to the sqlite db with diassembled functions
-DB_PATH=../data/openSSL_data.db
+DB_PATH=../data/OpenSSL_dataset.db
 
 # Path to embedding matrix
 EMBEDDING_MATRIX=../data/i2v/embedding_matrix.npy

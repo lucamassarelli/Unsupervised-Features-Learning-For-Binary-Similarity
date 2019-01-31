@@ -8,8 +8,8 @@ NETWORK_TYPE="Attention_Mean"
 # NETWORK_TYPE="Annotations"
 
 # What to classify:
-# CLASSIFICATION_KIND="Family"      # Compiler Family
-CLASSIFICATION_KIND="Compiler"      # Compiler Family + Version
+CLASSIFICATION_KIND="Family"      # Compiler Family
+# CLASSIFICATION_KIND="Compiler"      # Compiler Family + Version
 # CLASSIFICATION_KIND="Compiler+Opt"   # Compiler Familt + Version + Optimization
 # CLASSIFICATION_KIND="Opt"      # Optimization
 
