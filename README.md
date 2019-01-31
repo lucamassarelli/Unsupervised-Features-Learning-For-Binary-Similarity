@@ -7,7 +7,7 @@ Analysis Research (BAR) 2019.
 You can use the code to solve two different tasks:
 
 - Binary Similarity with functions embeddings.
-- Compiler Classification
+- Compiler Provenance
 
 ## Reproducing the experiment
 
@@ -20,7 +20,7 @@ Following this step you will be able to reproduce the experiments of the paper!
    ```
 
 ### Download datasets
-First you need to download the datasets.
+First you need to download at least one of the datasets.
 We release the three datasets used in the paper:
 
 - **OpenSSL_dataset**: It includes two version of OpenSSL libraries compiled for X86 and ARM with 
@@ -33,14 +33,14 @@ We release the three datasets used in the paper:
 
    
 - **Restricted_Compiler_Dataset**: It includes different projects compiled for X86 gcc-3, gcc-5, 
-    clang-3.9 with optimizations from 0 to 3. It has been used for compiler classification. To download it:
+    clang-3.9 with optimizations from 0 to 3. It has been used for compiler provenance. To download it:
     
     ```
     python downloader.py -rc
     ```
     
 - **Compiler_Dataset**: It includes different projects compiled for X86 different compilers (see the paper) with 
-optimizations from 0 to 3. It has been used for compiler classification. This dataset is very huge,
+optimizations from 0 to 3. It has been used for compiler provenance. This dataset is very huge,
 you need 30 GB of space to download it. To download it:
     
     ```
@@ -50,7 +50,7 @@ you need 30 GB of space to download it. To download it:
 
 ### Download word2vec model for asm
 
-Before to run the experiment you need to download also the word2vec model for asm.
+Before to run the experiment you need to download the word2vec model for asm.
 It consists of two file, the embedding matrix and the word2id file. The latter that assigns to 
 each instruction an id. The id correspond to the relative row of the instruction inside the
 embedding matrix.
@@ -80,13 +80,13 @@ chmod +x train.sh
 ./train.sh
 ```
 
-### Compiler classification
+### Compiler provenance
 
 Like in the previous case just run:
 
 ```
 export PYTHONPATH=path-to-repository
-cd compiler_classification
+cd compiler_provenance
 chmod +x train.sh
 ./train.sh
 ```

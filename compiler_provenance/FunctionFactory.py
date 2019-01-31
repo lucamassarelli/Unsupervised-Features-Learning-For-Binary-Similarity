@@ -4,7 +4,7 @@
 # distributed under license: CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode.txt) #
 #
 
-from compiler_classification.utils import __padAndFilter as padAndFilter
+from compiler_provenance.utils import __padAndFilter as padAndFilter
 from asm_embedding.InstructionsConverter import InstructionsConverter
 from asm_embedding.FunctionNormalizer import FunctionNormalizer
 import json

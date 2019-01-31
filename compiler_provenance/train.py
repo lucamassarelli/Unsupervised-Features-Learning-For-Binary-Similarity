@@ -4,8 +4,8 @@
 # distributed under license: CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode.txt) #
 #
 
-from compiler_classification.s2v_trainer import S2VTrainerLSTM
-from compiler_classification.parameters import Flags
+from compiler_provenance.s2v_trainer import S2VTrainerLSTM
+from compiler_provenance.parameters import Flags
 import numpy as np
 
 

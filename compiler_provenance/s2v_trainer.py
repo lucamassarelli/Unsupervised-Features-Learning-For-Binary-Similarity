@@ -5,12 +5,12 @@
 #
 
 
-from compiler_classification.s2v_classification_network_arith_mean import NetworkLSTM as arithMeanNetwork
-from compiler_classification.s2v_classification_network_rnn import NetworkLSTM as rrnFastMeanNetwork
-from compiler_classification.s2v_classification_network_annotations import Network as annotationNetwork
-from compiler_classification.s2v_classification_network_attention_mean import Network as weightedMeanNetwork
+from compiler_provenance.s2v_classification_network_arith_mean import NetworkLSTM as arithMeanNetwork
+from compiler_provenance.s2v_classification_network_rnn import NetworkLSTM as rrnFastMeanNetwork
+from compiler_provenance.s2v_classification_network_annotations import Network as annotationNetwork
+from compiler_provenance.s2v_classification_network_attention_mean import Network as weightedMeanNetwork
 
-from compiler_classification.FunctionFactory import PairFactory as FunctionFactory
+from compiler_provenance.FunctionFactory import PairFactory as FunctionFactory
 
 import tensorflow as tf
 import random
