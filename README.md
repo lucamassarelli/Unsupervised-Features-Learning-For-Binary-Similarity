@@ -146,9 +146,7 @@ python dataset_creation/ExperimentUtil.py -db name_of_the_db -s
 ## Citation
 If you use this repository or datasets for your project please cite:
 
-Massarelli L., Di Luna G. A., Petroni F., Querzoni L., Baldoni R. 
-Investigating Graph Embedding Neural Networks with Unsupervised Features Extraction for Binary Analysis. 
-To Appear in: In Symposium on Network and Distributed System Security (NDSS), Workshop on Binary Analysis Research. 2019.
+Massarelli L., Di Luna G. A., Petroni F., Querzoni L., Baldoni R. Investigating Graph Embedding Neural Networks with Unsupervised Features Extraction for Binary Analysis. To Appear in: Workshop on Binary Analysis Research (BAR) colocated with Symposium on Network and Distributed System Security (NDSS). 2019.
 
 ## Aknowledgement
 
